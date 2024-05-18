@@ -1,23 +1,22 @@
+package example.com.visualisation;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import java.util.Arrays;
-import java.util.Random;
-
 public class BinarySearchVisualizer extends Application {
 
-    private int[] array;
-    private Label statusLabel;
+    private TextField arraySizeInput;
+    private TextField searchValueInput;
     private TextField delayInput;
-    private VBox arrayDisplay;
+    private Label statusLabel;
+    private HBox arrayDisplay;
+    private Timeline timeline;
 
     public static void main(String[] args) {
         launch(args);
@@ -27,61 +26,73 @@ public class BinarySearchVisualizer extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Binary Search Visualizer");
 
-        TextField arraySizeInput = new TextField();
-        arraySizeInput.setPromptText("Enter array size");
+        // UI elements
+        arraySizeInput = new TextField("10");
+        searchValueInput = new TextField();
+        delayInput = new TextField("500");
+        Button startButton = new Button("Start Search");
+        statusLabel = new Label("Enter array size, search value and delay.");
+        arrayDisplay = new HBox();
+        arrayDisplay.setSpacing(5);
 
-        Button generateButton = new Button("Generate Array");
-        generateButton.setOnAction(e -> generateArray(Integer.parseInt(arraySizeInput.getText())));
+        // Layout
+        VBox root = new VBox();
+        root.setSpacing(10);
+        root.getChildren().addAll(
+                new Label("Array Size:"), arraySizeInput,
+                new Label("Search Value:"), searchValueInput,
+                new Label("Delay (ms):"), delayInput,
+                startButton,
+                statusLabel,
+                arrayDisplay
+        );
 
-        TextField searchValueInput = new TextField();
-        searchValueInput.setPromptText("Enter value to search");
+        // Event Handling
+        startButton.setOnAction(event -> startBinarySearch());
 
-        delayInput = new TextField();
-        delayInput.setPromptText("Enter delay in ms");
-
-        Button searchButton = new Button("Start Search");
-        searchButton.setOnAction(e -> binarySearchWithVisualization(array, Integer.parseInt(searchValueInput.getText())));
-
-        statusLabel = new Label("Status: Ready");
-
-        arrayDisplay = new VBox();
-
-        VBox layout = new VBox(10, arraySizeInput, generateButton, searchValueInput, delayInput, searchButton, statusLabel, arrayDisplay);
-        Scene scene = new Scene(layout, 600, 400);
-
-        primaryStage.setScene(scene);
+        primaryStage.setScene(new Scene(root, 600, 400));
         primaryStage.show();
     }
 
-    private void generateArray(int size) {
-        array = new Random().ints(size, 0, 100).sorted().toArray();
-        updateArrayDisplay();
-    }
+    private void startBinarySearch() {
+        try {
+            int size = Integer.parseInt(arraySizeInput.getText());
+            int searchValue = Integer.parseInt(searchValueInput.getText());
+            int delay = Integer.parseInt(delayInput.getText());
 
-    private void updateArrayDisplay() {
-        arrayDisplay.getChildren().clear();
-        for (int num : array) {
-            Label label = new Label(String.valueOf(num));
-            arrayDisplay.getChildren().add(label);
+            // Generate a sorted array
+            int[] array = new int[size];
+            for (int i = 0; i < size; i++) {
+                array[i] = i + 1;
+            }
+
+            // Display the array
+            arrayDisplay.getChildren().clear();
+            for (int num : array) {
+                Label label = new Label(String.valueOf(num));
+                label.setStyle("-fx-border-color: black; -fx-padding: 5px;");
+                arrayDisplay.getChildren().add(label);
+            }
+
+            // Start visualization
+            binarySearchWithVisualization(array, searchValue, delay);
+
+        } catch (NumberFormatException e) {
+            statusLabel.setText("Please enter valid numbers.");
         }
     }
 
-    private void binarySearchWithVisualization(int[] array, int key) {
+    private void binarySearchWithVisualization(int[] array, int key, int delay) {
         final int[] low = {0};
         final int[] high = {array.length - 1};
-        final int[] step = {0};
         final int[] iterCount = {0};
-
-        Timeline timeline = new Timeline();
-        int duration = Integer.parseInt(delayInput.getText());
-        timeline.getKeyFrames().add(new KeyFrame(Duration.millis(duration), event -> {
+        timeline = new Timeline();
+        timeline.getKeyFrames().add(new KeyFrame(Duration.millis(delay), event -> {
             int mid = (low[0] + high[0]) / 2;
             iterCount[0]++;
             statusLabel.setText("Iteration count: " + iterCount[0] + ". Range: " + low[0] + " - " + high[0] + ". Mid: " + mid);
-
-            highlightArrayPositions(low[0], mid, high[0]);
-
             if (low[0] <= high[0]) {
+                highlightArrayPositions(low[0], mid, high[0]);
                 if (array[mid] < key) {
                     low[0] = mid + 1;
                 } else if (array[mid] > key) {
@@ -103,11 +114,11 @@ public class BinarySearchVisualizer extends Application {
         for (int i = 0; i < arrayDisplay.getChildren().size(); i++) {
             Label label = (Label) arrayDisplay.getChildren().get(i);
             if (i == mid) {
-                label.setStyle("-fx-background-color: yellow");
+                label.setStyle("-fx-border-color: red; -fx-padding: 5px;");
             } else if (i >= low && i <= high) {
-                label.setStyle("-fx-background-color: lightgray");
+                label.setStyle("-fx-border-color: yellow; -fx-padding: 5px;");
             } else {
-                label.setStyle("");
+                label.setStyle("-fx-border-color: black; -fx-padding: 5px;");
             }
         }
     }
