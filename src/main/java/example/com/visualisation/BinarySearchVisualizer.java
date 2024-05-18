@@ -9,6 +9,9 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.util.Arrays;
+import java.util.Random;
+
 public class BinarySearchVisualizer extends Application {
 
     private TextField arraySizeInput;
@@ -31,7 +34,7 @@ public class BinarySearchVisualizer extends Application {
         searchValueInput = new TextField();
         delayInput = new TextField("500");
         Button startButton = new Button("Start Search");
-        statusLabel = new Label("Enter array size, search value and delay.");
+        statusLabel = new Label("Enter array size, search value, and delay.");
         arrayDisplay = new HBox();
         arrayDisplay.setSpacing(5);
 
@@ -60,11 +63,13 @@ public class BinarySearchVisualizer extends Application {
             int searchValue = Integer.parseInt(searchValueInput.getText());
             int delay = Integer.parseInt(delayInput.getText());
 
-            // Generate a sorted array
+            // Generate a sorted array of random numbers from 1 to 100
             int[] array = new int[size];
+            Random random = new Random();
             for (int i = 0; i < size; i++) {
-                array[i] = i + 1;
+                array[i] = random.nextInt(100) + 1;
             }
+            Arrays.sort(array);
 
             // Display the array
             arrayDisplay.getChildren().clear();
